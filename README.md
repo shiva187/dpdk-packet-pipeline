@@ -96,3 +96,58 @@ This project is intentionally **simple** so you can quickly understand:
 * How 5G UPF implementations use DPDK internally
 
 This acts as a base template for building more advanced high-performance networking applications.
+
+
+                       +---------------------------+
+                       |     DPDK Application      |
+                       |     (main.c program)      |
+                       +------------+--------------+
+                                    |
+                                    v
+                     +--------------+----------------+
+                     |     DPDK EAL Initialization   |
+                     |  - Hugepages                  |
+                     |  - Memory reservation         |
+                     |  - Core/lcore init            |
+                     |  - PCI device discovery       |
+                     +--------------+----------------+
+                                    |
+                                    v
+                     +--------------+----------------+
+                     |      Mempool (mbuf pool)      |
+                     |  rte_pktmbuf_pool_create()    |
+                     +--------------+----------------+
+                                    |
+                                    v
+                     +--------------+----------------+
+                     |        NIC / vNIC Setup       |
+                     |  rte_eth_dev_configure()      |
+                     |  rte_eth_rx_queue_setup()     |
+                     |  rte_eth_tx_queue_setup()     |
+                     |  rte_eth_dev_start()          |
+                     +--------------+----------------+
+                                    |
+                                    v
+     +------------------------------+------------------------------+
+     |                                                             |
+     |                      PACKET PROCESSING LOOP                 |
+     |                                                             |
+     |   while (1) {                                               |
+     |       RX = rte_eth_rx_burst();   <-- Receive packets        |
+     |       for each packet:                                      |
+     |            - Parse / Inspect                                |
+     |            - Modify (optional)                              |
+     |            - Forward                                        |
+     |       TX = rte_eth_tx_burst();   <-- Transmit packets       |
+     |   }                                                         |
+     |                                                             |
+     +------------------------------+------------------------------+
+                                    |
+                                    v
+                     +--------------+----------------+
+                     |      Port Stop / Cleanup      |
+                     |  rte_eth_dev_stop()           |
+                     |  rte_eth_dev_close()          |
+                     |  Release mempool              |
+                     +--------------+----------------+
+
